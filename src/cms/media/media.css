@@ -13,25 +13,6 @@
   margin: 18px 0;
 }
 
-.cms-error,
-.cms-success {
-  padding: 14px 18px;
-  margin: 14px 0;
-  border-radius: 8px;
-  line-height: 1.5;
-  overflow-wrap: anywhere;
-}
-
-.cms-error {
-  color: #991b1b;
-  background: #fef2f2;
-}
-
-.cms-success {
-  color: #166534;
-  background: #ecfdf5;
-}
-
 .cms-media-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -63,19 +44,8 @@
   margin: 18px 0;
 }
 
-.gallery-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr auto;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
 @media (max-width: 700px) {
   .cms-media-preview {
     inset: 5vh 4vw;
-  }
-
-  .gallery-row {
-    grid-template-columns: 1fr;
   }
 }

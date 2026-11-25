@@ -56,8 +56,7 @@ a {
   transition: var(--transition-fast);
 }
 button:focus-visible,
-a:focus-visible,
-summary:focus-visible {
+a:focus-visible {
   outline: 2px solid var(--accent-color);
   outline-offset: 4px;
 }
@@ -427,9 +426,6 @@ html:has(.modal-overlay[open]) {
   align-items: center;
   gap: 16px;
 }
-.modal-header h2 {
-  font-size: 24px;
-}
 .modal-body {
   min-width: 0;
   min-height: 0;
@@ -673,5 +669,37 @@ html:has(.modal-overlay[open]) {
   *::after {
     transition: none !important;
     animation: none !important;
+  }
+}
+
+.cms-error,
+.cms-success {
+  padding: 14px 18px;
+  margin: 14px 0;
+  border-radius: 8px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.cms-error {
+  color: #991b1b;
+  background: #fef2f2;
+}
+
+.cms-success {
+  color: #166534;
+  background: #ecfdf5;
+}
+
+.gallery-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 700px) {
+  .gallery-row {
+    grid-template-columns: 1fr;
   }
 }

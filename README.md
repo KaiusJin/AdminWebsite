@@ -13,6 +13,16 @@ Private React/Vite administration interface for portfolio content stored in Supa
 
 Content is written directly to the live tables. There is no draft, publish-status, visibility, translation, or content-preview workflow.
 
+## Source organization
+
+- `src/App.jsx` owns the session gate and routes; `src/pages/` composes the login and dashboard pages.
+- `src/cms/collections.js` defines navigation order, content labels, collection limits, and form defaults.
+- `src/cms/content/` owns content lists, editing forms, and content API operations.
+- `src/cms/media/` owns media uploads, selection, asset loading, and media-specific styles.
+- `src/components/` contains reusable UI such as `ArrayEditor`.
+- `src/lib/supabase.js` initializes the shared Supabase client.
+- `src/index.css` contains shared layout, form, and feedback styles and is loaded by `src/main.jsx`.
+
 ## Local development
 
 Create `.env` with:

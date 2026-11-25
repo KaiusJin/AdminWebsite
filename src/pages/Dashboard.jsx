@@ -13,22 +13,23 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
-import DataManager from "../components/DataManager";
-import MediaLibrary from "../cms/MediaLibrary";
-import { contentLabels } from "../cms/contentLabels";
+import DataManager from "../cms/content/DataManager";
+import MediaLibrary from "../cms/media/MediaLibrary";
+import { collections } from "../cms/collections.js";
 
-const tabs = [
-  ["site_profile", UserRound],
-  ["work_experiences", Briefcase],
-  ["club_experiences", Users],
-  ["volunteer_experiences", HeartHandshake],
-  ["projects", LayoutDashboard],
-  ["awards", Award],
-  ["skills", Code],
-  ["personal_entries", BookOpen],
-  ["journey_scene_content", Image],
-  ["media", Image],
-];
+const tabIcons = {
+  site_profile: UserRound,
+  work_experiences: Briefcase,
+  club_experiences: Users,
+  volunteer_experiences: HeartHandshake,
+  projects: LayoutDashboard,
+  awards: Award,
+  skills: Code,
+  personal_entries: BookOpen,
+  journey_scene_content: Image,
+  media: Image,
+};
+const tabs = Object.keys(collections).map(id => [id, tabIcons[id]]);
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("projects");
@@ -58,7 +59,7 @@ export default function Dashboard() {
         <label className="mobile-navigation">
           <span className="sr-only">Content section</span>
           <select aria-label="Content section" value={activeTab} onChange={event => setActiveTab(event.target.value)}>
-            {tabs.map(([id]) => <option key={id} value={id}>{contentLabels[id].plural}</option>)}
+            {tabs.map(([id]) => <option key={id} value={id}>{collections[id].plural}</option>)}
           </select>
         </label>
         <nav aria-label="Content sections">
@@ -71,7 +72,7 @@ export default function Dashboard() {
               onClick={() => setActiveTab(id)}
             >
               <Icon size={18} aria-hidden="true" />
-              {contentLabels[id].plural}
+              {collections[id].plural}
             </button>
           ))}
         </nav>
@@ -87,7 +88,7 @@ export default function Dashboard() {
       </aside>
       <main className="main-content">
         <header className="page-header">
-          <h1>{contentLabels[activeTab].plural}</h1>
+          <h1>{collections[activeTab].plural}</h1>
           <a
             className="website-link"
             href="https://kaiusjin.com"

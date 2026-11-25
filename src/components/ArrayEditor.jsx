@@ -6,7 +6,7 @@ export default function ArrayEditor({
   itemLabel,
   addLabel,
   fields,
-  value = [],
+  value,
   onChange,
   rowClass = "list-row",
 }) {

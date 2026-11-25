@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { supabase } from "../lib/supabase";
+import { supabase } from "../../lib/supabase";
 import { Edit, Trash2, Plus, GripVertical } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import EditModal from "./EditModal";
-import { contentLabels } from "../cms/contentLabels";
-import { editableContent, loadContent, saveOrder } from "../cms/contentStore";
+import { collections } from "../collections.js";
+import { deleteContent, loadContent, saveContent, saveOrder } from "./contentApi.js";
 
 export default function DataManager({ table }) {
   const [data, setData] = useState([]);
@@ -13,13 +13,9 @@ export default function DataManager({ table }) {
   const [busy, setBusy] = useState(false);
   const [revision, setRevision] = useState(0);
   const [editing, setEditing] = useState(null);
-  const sortable = !["site_profile", "journey_scene_content"].includes(table);
-  const canAdd =
-    table === "site_profile"
-      ? data.length === 0
-      : table === "journey_scene_content"
-        ? data.length < 7
-        : true;
+  const collection = collections[table];
+  const sortable = collection.sortable !== false;
+  const canAdd = data.length < (collection.maxEntries ?? Infinity);
 
   useEffect(() => {
     const abort = new AbortController();
@@ -77,33 +73,15 @@ export default function DataManager({ table }) {
   };
   const handleSave = (formData) =>
     mutate(async () => {
-      const content = editableContent(formData, table);
-      const request = editing.item
-        ? supabase.from(table).update(content).eq("id", editing.item.id)
-        : supabase
-            .from(table)
-            .insert({
-              ...content,
-              order:
-                sortable && data.length
-                  ? Math.max(...data.map((item) => item.order ?? 0)) + 1
-                  : 0,
-            });
-      const { error } = await request.select("id").single();
-      if (error) throw error;
+      await saveContent(supabase, table, formData, {
+        item: editing.item,
+        entries: data,
+      });
       setEditing(null);
     });
   const deleteItem = (id) => {
     if (!window.confirm("Are you sure you want to delete this item?")) return;
-    mutate(async () => {
-      const { error } = await supabase
-        .from(table)
-        .delete()
-        .eq("id", id)
-        .select("id")
-        .single();
-      if (error) throw error;
-    });
+    mutate(() => deleteContent(supabase, table, id));
   };
   const openEditor = (item) => {
     setError("");
@@ -115,7 +93,6 @@ export default function DataManager({ table }) {
       ref={provided?.innerRef}
       {...provided?.draggableProps}
       className={dragging ? "is-dragging" : undefined}
-      style={provided?.draggableProps.style}
     >
       {sortable && (
         <td className="reorder-cell">
@@ -129,7 +106,7 @@ export default function DataManager({ table }) {
           </button>
         </td>
       )}
-      <td className="record-cell">
+      <td>
         <button
           className="record-title"
           onClick={() => openEditor(item)}
@@ -222,7 +199,7 @@ export default function DataManager({ table }) {
                 onClick={() => openEditor(null)}
               >
                 <Plus size={17} aria-hidden="true" /> Add{" "}
-                {contentLabels[table].singular}
+                {collection.singular}
               </button>
             )}
           </div>
@@ -264,7 +241,7 @@ export default function DataManager({ table }) {
           </div>
           {!data.length && !error && (
             <p className="empty-state">
-              No {contentLabels[table].plural.toLowerCase()} yet.
+              No {collection.plural.toLowerCase()} yet.
             </p>
           )}
         </>

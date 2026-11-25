@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { supabase } from '../lib/supabase';
-import './cms.css';
+import { supabase } from '../../lib/supabase';
+import './media.css';
+import { uploadMedia } from './mediaApi';
 import useMediaAssets from './useMediaAssets';
 
 const accepted = ['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'audio/mpeg', 'audio/ogg', 'audio/wav', 'application/pdf'];
@@ -31,18 +32,7 @@ export default function MediaLibrary() {
     setError('');
     setNotice('');
     try {
-      const id = crypto.randomUUID();
-      const extension = file.name.split('.').pop().replace(/[^a-z0-9]/gi, '').toLowerCase();
-      const path = `${id}.${extension || 'bin'}`;
-      const { error: uploadError } = await supabase.storage
-        .from('journey-media')
-        .upload(path, file, { contentType: file.type, upsert: false });
-      if (uploadError) throw uploadError;
-
-      const { error: databaseError } = await supabase
-        .from('media_assets')
-        .insert({ id, path, name: file.name, mime: file.type, size: file.size, alt });
-      if (databaseError) throw Error(`File uploaded, but metadata could not be saved. ${databaseError.message} Path: ${path}`);
+      await uploadMedia(supabase, file, alt);
 
       setNotice('Upload complete.');
       setFile(null);

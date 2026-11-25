@@ -1,7 +1,11 @@
 import useMediaAssets from './useMediaAssets';
 
 export default function MediaPicker({ kind, onSelect }) {
-  const { assets: allAssets, error } = useMediaAssets();
+  const { assets, error } = useMediaAssets();
+  return <MediaSelect assets={assets} error={error} kind={kind} onSelect={onSelect} />;
+}
+
+export function MediaSelect({ assets: allAssets, error, kind, onSelect }) {
   const assets = allAssets.filter(asset => asset.mime?.startsWith(`${kind}/`));
   return <label className="input-group">
     Choose uploaded {kind}

@@ -1,23 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { contentLabels, experienceTables } from "../cms/contentLabels";
-import { editableContent } from "../cms/contentStore";
+import { collections, journeyScenes } from "../collections.js";
+import { editableContent } from "./contentApi.js";
 import { X } from "lucide-react";
-import ArrayEditor from "./ArrayEditor";
-import MediaPicker from "../cms/MediaPicker";
-
-const journeyFields = [
-  ["Welcome introduction", "welcome_intro"],
-  ["Focus label", "focus"],
-  ["Profile heading", "heading"],
-  ["Profile introduction", "intro"],
-  ["Profile biography", "bio"],
-  ["Education school", "education_school"],
-  ["Education field", "education_field"],
-  ["Location detail", "location_detail"],
-  ["Contact heading", "contact_heading"],
-  ["Contact introduction", "contact_intro"],
-  ["Contact closing", "contact_outro"],
-];
+import ArrayEditor from "../../components/ArrayEditor";
+import MediaPicker from "../media/MediaPicker";
+import ProfileFields from "./ProfileFields";
+import PersonalEntryFields from "./PersonalEntryFields";
 
 export default function EditModal({
   onClose,
@@ -31,9 +19,7 @@ export default function EditModal({
   const [formData, setFormData] = useState(() =>
     item
       ? editableContent(item, table)
-      : table === "personal_entries"
-        ? { kind: "daily" }
-        : {},
+      : collections[table].defaultValues || {},
   );
   const dialogRef = useRef(null);
   useEffect(() => {
@@ -41,7 +27,7 @@ export default function EditModal({
     dialog.showModal();
     return () => dialog.close();
   }, []);
-  const isExperience = experienceTables.includes(table);
+  const isExperience = Boolean(collections[table].experience);
 
   const handleChange = (field, value, locale) => {
     setFormData((previous) => {
@@ -78,13 +64,6 @@ export default function EditModal({
     );
   };
 
-  const renderJourneyFields = (locale, label) => (
-    <section>
-      <h3>Journey — {label}</h3>
-      {journeyFields.map(([fieldLabel, field]) => renderField(fieldLabel, field, "textarea", locale))}
-    </section>
-  );
-
   return (
     <dialog
       ref={dialogRef}
@@ -98,7 +77,7 @@ export default function EditModal({
       <div className="modal-content">
         <div className="modal-header">
           <h2 id="editor-title">
-            {item ? "Edit" : "New"} {contentLabels[table].singular}
+            {item ? "Edit" : "New"} {collections[table].singular}
           </h2>
           <button
             disabled={busy}
@@ -185,91 +164,16 @@ export default function EditModal({
             )}
 
             {table === "site_profile" && (
-              <>
-                <h3>Classic profile</h3>
-                {renderField("Name", "name")}
-                {renderField("Hero badge", "hero_badge")}
-                {renderField("Introduction", "intro", "textarea")}
-                {renderField("Biography", "bio", "textarea")}
-                {renderField("Location", "location")}
-                {renderField("Education", "education")}
-                <h3>Contact links</h3>
-                {renderField("Email", "email", "email")}
-                {renderField("GitHub URL", "github", "url")}
-                {renderField("LinkedIn URL", "linkedin", "url")}
-                {renderJourneyFields("journey_en", "English")}
-                {renderJourneyFields("journey_zh", "中文")}
-              </>
+              <ProfileFields renderField={renderField} />
             )}
 
             {table === "personal_entries" && (
-              <>
-                <label className="input-group">
-                  Category
-                  <select
-                    value={formData.kind}
-                    onChange={(event) =>
-                      handleChange("kind", event.target.value)
-                    }
-                  >
-                    {["photography", "travel", "daily", "music"].map((kind) => (
-                      <option key={kind} value={kind}>
-                        {kind}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                {renderField("Story", "body", "textarea")}
-                {renderField("Date", "date", "date")}
-                {formData.kind === "music" && (
-                  <MediaPicker
-                    kind="audio"
-                    onSelect={(asset) =>
-                      handleChange("external_url", asset.url)
-                    }
-                  />
-                )}
-                {renderField("Music / Related URL", "external_url", "url")}
-                <MediaPicker
-                  kind="image"
-                  onSelect={(asset) =>
-                    updateArray("images", (images) => [
-                      ...images,
-                      {
-                        url: asset.url,
-                        alt: asset.alt,
-                        caption: "",
-                      },
-                    ])
-                  }
-                />
-                <ArrayEditor
-                  label="Photo Gallery"
-                  itemLabel="photo"
-                  addLabel="Add Photo"
-                  rowClass="gallery-row"
-                  fields={[
-                    {
-                      key: "url",
-                      label: "Image URL",
-                      type: "url",
-                      placeholder: "Image URL",
-                    },
-                    {
-                      key: "alt",
-                      label: "Image description",
-                      placeholder: "Image description",
-                    },
-                    {
-                      key: "caption",
-                      label: "Caption",
-                      placeholder: "Caption",
-                    },
-                  ]}
-                  value={formData.images}
-                  onChange={(update) => updateArray("images", update)}
-                />
-              </>
+              <PersonalEntryFields
+                formData={formData}
+                handleChange={handleChange}
+                renderField={renderField}
+                updateArray={updateArray}
+              />
             )}
 
             {table === "journey_scene_content" && (
@@ -285,15 +189,7 @@ export default function EditModal({
                     <option value="" disabled>
                       Choose a scene
                     </option>
-                    {[
-                      "cottage",
-                      "meadow",
-                      "town",
-                      "library",
-                      "academy",
-                      "lake",
-                      "station",
-                    ]
+                    {journeyScenes
                       .filter(
                         (scene) =>
                           scene === item?.scene_id ||
